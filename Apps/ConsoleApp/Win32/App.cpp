@@ -117,8 +117,8 @@ int main()
     // Create a render target texture for the output.
     winrt::com_ptr<ID3D11Texture2D> outputTexture = CreateD3DRenderTargetTexture(d3dDevice.get());
 
-    std::promise<void> addToContext{};
-    std::promise<void> startup{};
+    //std::promise<void> addToContext{};
+    //std::promise<void> startup{};
 
     // Create an external texture for the render target texture and pass it to
     // the `startup` JavaScript function.
@@ -147,8 +147,8 @@ int main()
     //addToContext.get_future().wait();
 
     //// Render a frame so that `AddToContextAsync` will complete.
-    deviceUpdate->Finish();
-    device->FinishRenderingCurrentFrame();
+    //deviceUpdate->Finish();
+    //device->FinishRenderingCurrentFrame();
 
     //// Wait for `startup` to finish.
     //startup.get_future().wait();
@@ -213,6 +213,16 @@ int main()
     //    // See https://github.com/Microsoft/DirectXTK/wiki/ScreenGrab#srgb-vs-linear-color-space
     //    winrt::check_hresult(DirectX::SaveWICTextureToFile(d3dDeviceContext.get(), outputTexture.get(), GUID_ContainerFormatPng, filePath.c_str(), nullptr, nullptr, true));
     //}
+
+    deviceUpdate->Finish();
+    device->FinishRenderingCurrentFrame();
+
+    // Wait for scripts to load.
+    std::promise<void> promise{};
+    loader.Dispatch([&promise](auto) {
+        promise.set_value();
+    });
+    promise.get_future().wait();
 
     // Reset the application runtime, then graphics device update, then graphics device, in that order.
     runtime.reset();
