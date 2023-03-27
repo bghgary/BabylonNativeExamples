@@ -110,8 +110,8 @@ int main()
 
     // Load the scripts for Babylon.js core and loaders plus this app's index.js.
     Babylon::ScriptLoader loader{*runtime};
-    loader.LoadScript("app:///Scripts/babylon.max.js");
-    loader.LoadScript("app:///Scripts/babylonjs.loaders.js");
+    //loader.LoadScript("app:///Scripts/babylon.max.js");
+    //loader.LoadScript("app:///Scripts/babylonjs.loaders.js");
     loader.LoadScript("app:///Scripts/index.js");
 
     // Create a render target texture for the output.
@@ -122,97 +122,97 @@ int main()
 
     // Create an external texture for the render target texture and pass it to
     // the `startup` JavaScript function.
-    loader.Dispatch([externalTexture = Babylon::Plugins::ExternalTexture{outputTexture.get()}, &addToContext, &startup](Napi::Env env)
-    {
-        auto jsPromise = externalTexture.AddToContextAsync(env);
-        addToContext.set_value();
+    //loader.Dispatch([externalTexture = Babylon::Plugins::ExternalTexture{outputTexture.get()}, &addToContext, &startup](Napi::Env env)
+    //{
+    //    auto jsPromise = externalTexture.AddToContextAsync(env);
+    //    addToContext.set_value();
 
-        jsPromise.Get("then").As<Napi::Function>().Call(jsPromise,
-        {
-            Napi::Function::New(env, [&startup](const Napi::CallbackInfo& info)
-            {
-                auto nativeTexture = info[0];
-                info.Env().Global().Get("startup").As<Napi::Function>().Call(
-                {
-                    nativeTexture,
-                    Napi::Value::From(info.Env(), WIDTH),
-                    Napi::Value::From(info.Env(), HEIGHT),
-                });
-                startup.set_value();
-            })
-        });
-    });
+    //    jsPromise.Get("then").As<Napi::Function>().Call(jsPromise,
+    //    {
+    //        Napi::Function::New(env, [&startup](const Napi::CallbackInfo& info)
+    //        {
+    //            auto nativeTexture = info[0];
+    //            info.Env().Global().Get("startup").As<Napi::Function>().Call(
+    //            {
+    //                nativeTexture,
+    //                Napi::Value::From(info.Env(), WIDTH),
+    //                Napi::Value::From(info.Env(), HEIGHT),
+    //            });
+    //            startup.set_value();
+    //        })
+    //    });
+    //});
 
-    // Wait for `AddToContextAsync` to be called.
-    addToContext.get_future().wait();
+    //// Wait for `AddToContextAsync` to be called.
+    //addToContext.get_future().wait();
 
-    // Render a frame so that `AddToContextAsync` will complete.
+    //// Render a frame so that `AddToContextAsync` will complete.
     deviceUpdate->Finish();
     device->FinishRenderingCurrentFrame();
 
-    // Wait for `startup` to finish.
-    startup.get_future().wait();
+    //// Wait for `startup` to finish.
+    //startup.get_future().wait();
 
-    struct Asset
-    {
-        const char* Name;
-        const char* Url;
-    };
+    //struct Asset
+    //{
+    //    const char* Name;
+    //    const char* Url;
+    //};
 
-    std::array<Asset, 3> assets =
-    {
-        Asset{"BoomBox", "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/BoomBox/glTF/BoomBox.gltf"},
-        Asset{"GlamVelvetSofa", "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/GlamVelvetSofa/glTF/GlamVelvetSofa.gltf"},
-        Asset{"MaterialsVariantsShoe", "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/MaterialsVariantsShoe/glTF/MaterialsVariantsShoe.gltf"},
-    };
+    //std::array<Asset, 3> assets =
+    //{
+    //    Asset{"BoomBox", "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/BoomBox/glTF/BoomBox.gltf"},
+    //    Asset{"GlamVelvetSofa", "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/GlamVelvetSofa/glTF/GlamVelvetSofa.gltf"},
+    //    Asset{"MaterialsVariantsShoe", "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/MaterialsVariantsShoe/glTF/MaterialsVariantsShoe.gltf"},
+    //};
 
-    for (const auto& asset : assets)
-    {
-        // Tell RenderDoc to start capturing.
-        RenderDoc::StartFrameCapture(d3dDevice.get());
+    //for (const auto& asset : assets)
+    //{
+    //    // Tell RenderDoc to start capturing.
+    //    RenderDoc::StartFrameCapture(d3dDevice.get());
 
-        // Start rendering a frame to unblock the JavaScript again.
-        device->StartRenderingCurrentFrame();
-        deviceUpdate->Start();
+    //    // Start rendering a frame to unblock the JavaScript again.
+    //    device->StartRenderingCurrentFrame();
+    //    deviceUpdate->Start();
 
-        std::promise<void> loadAndRenderAsset{};
+    //    std::promise<void> loadAndRenderAsset{};
 
-        // Call `loadAndRenderAssetAsync` with the asset URL.
-        loader.Dispatch([&loadAndRenderAsset, &asset](Napi::Env env)
-        {
-            std::cout << "Loading " << asset.Name << std::endl;
+    //    // Call `loadAndRenderAssetAsync` with the asset URL.
+    //    loader.Dispatch([&loadAndRenderAsset, &asset](Napi::Env env)
+    //    {
+    //        std::cout << "Loading " << asset.Name << std::endl;
 
-            auto jsPromise = env.Global().Get("loadAndRenderAssetAsync").As<Napi::Function>().Call({
-                Napi::String::From(env, asset.Url)
-            }).As<Napi::Promise>();
+    //        auto jsPromise = env.Global().Get("loadAndRenderAssetAsync").As<Napi::Function>().Call({
+    //            Napi::String::From(env, asset.Url)
+    //        }).As<Napi::Promise>();
 
-            jsPromise.Get("then").As<Napi::Function>().Call(jsPromise,
-            {
-                Napi::Function::New(env, [&loadAndRenderAsset](const Napi::CallbackInfo&)
-                {
-                    loadAndRenderAsset.set_value();
-                })
-            });
-        });
+    //        jsPromise.Get("then").As<Napi::Function>().Call(jsPromise,
+    //        {
+    //            Napi::Function::New(env, [&loadAndRenderAsset](const Napi::CallbackInfo&)
+    //            {
+    //                loadAndRenderAsset.set_value();
+    //            })
+    //        });
+    //    });
 
-        // Wait for the function to complete.
-        loadAndRenderAsset.get_future().wait();
+    //    // Wait for the function to complete.
+    //    loadAndRenderAsset.get_future().wait();
 
-        // Finish rendering the frame.
-        deviceUpdate->Finish();
-        device->FinishRenderingCurrentFrame();
+    //    // Finish rendering the frame.
+    //    deviceUpdate->Finish();
+    //    device->FinishRenderingCurrentFrame();
 
-        // Tell RenderDoc to stop capturing.
-        RenderDoc::StopFrameCapture(d3dDevice.get());
+    //    // Tell RenderDoc to stop capturing.
+    //    RenderDoc::StopFrameCapture(d3dDevice.get());
 
-        // Save the texture into an PNG next to the executable.
-        auto filePath = GetModulePath() / asset.Name;
-        filePath.concat(".png");
-        std::cout << "Writing " << filePath.string() << std::endl;
+    //    // Save the texture into an PNG next to the executable.
+    //    auto filePath = GetModulePath() / asset.Name;
+    //    filePath.concat(".png");
+    //    std::cout << "Writing " << filePath.string() << std::endl;
 
-        // See https://github.com/Microsoft/DirectXTK/wiki/ScreenGrab#srgb-vs-linear-color-space
-        winrt::check_hresult(DirectX::SaveWICTextureToFile(d3dDeviceContext.get(), outputTexture.get(), GUID_ContainerFormatPng, filePath.c_str(), nullptr, nullptr, true));
-    }
+    //    // See https://github.com/Microsoft/DirectXTK/wiki/ScreenGrab#srgb-vs-linear-color-space
+    //    winrt::check_hresult(DirectX::SaveWICTextureToFile(d3dDeviceContext.get(), outputTexture.get(), GUID_ContainerFormatPng, filePath.c_str(), nullptr, nullptr, true));
+    //}
 
     // Reset the application runtime, then graphics device update, then graphics device, in that order.
     runtime.reset();
